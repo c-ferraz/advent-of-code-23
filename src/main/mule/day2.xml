@@ -49,7 +49,7 @@ var data = payload splitBy ":"
 			<ee:transform doc:name="Validate game" doc:id="6c87d21c-7c82-4206-b201-c06b8c3ffb04" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/java
 var rounds = payload.rounds
 var totalCubes = vars.totalCubes
 var COLORS = namesOf(totalCubes)
@@ -114,7 +114,7 @@ var data = (payload splitBy ":")[1]
 			<ee:transform doc:name="Count minimal game" doc:id="433cf2ee-4ac7-4010-a182-099266cb64d7" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/java
 var rounds = payload
 var values = ['red', 'green', 'blue'] map if(!isEmpty(rounds[$])) max(rounds[$]) else null
 ---

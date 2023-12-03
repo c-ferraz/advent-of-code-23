@@ -64,7 +64,7 @@ readUrl("classpath://inputs//day1.txt", "text/plain")]]></ee:set-payload>
 			<ee:transform doc:name="Do stuff" doc:id="aef34c33-0cfc-43ff-b7c0-2c58e6ab7e53" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/java
 import isNumeric, reverse from dw::core::Strings
 import firstWith, some from dw::core::Arrays
 
@@ -129,7 +129,7 @@ else
 					<ee:transform doc:name="Do more stuff" doc:id="e965b4ea-2360-4d97-a730-80e402e44d1c" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/java
 var line = vars.line
 
 fun convertWrittenToDigit(value: String): String = 
