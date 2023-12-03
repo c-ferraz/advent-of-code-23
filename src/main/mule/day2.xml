@@ -79,13 +79,13 @@ sum(payload.payload[?($.isValid)].gameId map $ as Number)]]></ee:set-payload>
 		</ee:transform>
 		<logger level="INFO" doc:name="payload" doc:id="b16dc78b-0b39-4bc7-956c-a1dee4e7b169" message="#[payload]"/>
 	</flow>
-	<flow name="day2-part2 - TODO" doc:id="7ad71e9c-30ee-434c-9d76-a4136fadfc41" >
+	<flow name="day2-part2" doc:id="7ad71e9c-30ee-434c-9d76-a4136fadfc41" >
 		<scheduler doc:name="Scheduler" doc:id="f98a7bc7-eff0-416a-95c3-1c500edefc4b" >
 			<scheduling-strategy >
 				<fixed-frequency startDelay="1000" timeUnit="DAYS" />
 			</scheduling-strategy>
 		</scheduler>
-		<ee:transform doc:name="Initial values (2)" doc:id="b14ee5f9-cae7-4c73-b96c-e3d1c8fcef00" >
+		<ee:transform doc:name="Initial values (1)" doc:id="b14ee5f9-cae7-4c73-b96c-e3d1c8fcef00" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output text/plain
@@ -93,14 +93,6 @@ output text/plain
 readUrl("classpath://inputs//day2.txt", "text/plain")]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
-				<ee:set-variable variableName="totalCubes" ><![CDATA[%dw 2.0
-output application/java
----
-{
-	red: 12 , 
-	green: 13,
-	blue: 14
-}]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<parallel-foreach doc:name="Parallel For Each Game" doc:id="5706e4b2-ecf9-407c-9a7a-48caeaa0c376" collection="#[dw::core::Strings::lines(payload)]" >
@@ -108,40 +100,26 @@ output application/java
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
-var data = payload splitBy ":"
+var data = (payload splitBy ":")[1]
 ---
-{
-    gameId: (data[0] splitBy " ")[-1],
-    rounds: (data[1] splitBy ";") 
-                map ((cubes, index) -> (cubes splitBy ","
-                    map (line, index) -> trim(line) splitBy " ")
-                        map {
-                            ($[1]): $[0]
-                        }) map {($)}
-}]]></ee:set-payload>
+(data splitBy ";")
+    map ((cubes, index) -> (cubes splitBy ","
+        map (line, index) -> trim(line) splitBy " ")
+            map {
+                ($[1]): ($[0] as Number)
+            }) map {($)}
+]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
-			<ee:transform doc:name="Validate game" doc:id="433cf2ee-4ac7-4010-a182-099266cb64d7" >
+			<ee:transform doc:name="Count minimal game" doc:id="433cf2ee-4ac7-4010-a182-099266cb64d7" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
-var rounds = payload.rounds
-var totalCubes = vars.totalCubes
-var COLORS = namesOf(totalCubes)
-fun checkValidRound(round, counter = 0) = 
-    if (counter > 2)
-        true
-    else if ((round[(COLORS[counter])] default -1) > totalCubes[(COLORS[counter])])
-        false
-    else
-        checkValidRound(round, counter+1)
-
-
+var rounds = payload
+var values = ['red', 'green', 'blue'] map if(!isEmpty(rounds[$])) max(rounds[$]) else null
 ---
-{
-	gameId: payload.gameId,
-	isValid: !(rounds map checkValidRound($) contains false)
-}]]></ee:set-payload>
+(values[?(!isEmpty($))] as Array<Number>) reduce $ * $$
+]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
 		</parallel-foreach>
@@ -150,7 +128,7 @@ fun checkValidRound(round, counter = 0) =
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
-sum(payload.payload[?($.isValid)].gameId map $ as Number)]]></ee:set-payload>
+sum(payload.payload)]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="payload" doc:id="3851bb91-bcb9-442b-86e3-7e80f714390d" message="#[payload]" />
